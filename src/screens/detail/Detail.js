@@ -12,11 +12,20 @@ import {
 } from 'react-native';
 import * as axios from 'axios';
 import styles from './styles';
+import {getPostDetail} from '../../redux/actions/PostAction';
+import {useDispatch, useSelector} from 'react-redux';
 
 export default function DetailScreen({navigation, route}) {
-  const [postDetail, setPostDetail] = React.useState([]);
-  const [postComments, setPostComments] = React.useState([]);
+  const postState = useSelector(state => state);
+
+  const dispatch = useDispatch();
+
+  const details = postState?.postData?.detail;
+  const postDetail = details[0]?.data?.children[0]?.data;
+  const postComments = details[1]?.data?.children;
+
   var myDate = new Date(postDetail.created * 1000);
+
   React.useEffect(() => {
     const baseurl = 'https://www.reddit.com';
     var url = route?.params?.url;
@@ -26,13 +35,12 @@ export default function DetailScreen({navigation, route}) {
       axios
         .get(url)
         .then(function (response) {
-          setPostDetail(response?.data[0]?.data?.children[0]?.data);
-          setPostComments(response?.data[1]?.data?.children);
+          dispatch(getPostDetail(response.data));
         })
         .catch(function (error) {
           console.log(error);
         });
-  }, [route]);
+  }, [route, dispatch]);
 
   return (
     <SafeAreaView style={styles.container}>
